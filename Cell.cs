@@ -13,5 +13,6 @@ namespace MineSweeper
         public int y_row;
         public bool isVisited = false;
         public bool isBomb = false;
+        public int liveNeighbors = -1;
     }
 }
