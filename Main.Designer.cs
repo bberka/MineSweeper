@@ -40,7 +40,6 @@ namespace MineSweeper
             this.panelControl = new System.Windows.Forms.Panel();
             this.PointLabel = new System.Windows.Forms.Label();
             this.checkShowBomb = new System.Windows.Forms.CheckBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.panelControl.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -147,7 +146,6 @@ namespace MineSweeper
             // 
             // panelControl
             // 
-            this.panelControl.Controls.Add(this.button1);
             this.panelControl.Controls.Add(this.PointLabel);
             this.panelControl.Controls.Add(this.checkShowBomb);
             this.panelControl.Controls.Add(this.DifficultyLabel);
@@ -185,19 +183,6 @@ namespace MineSweeper
             this.checkShowBomb.UseVisualStyleBackColor = true;
             this.checkShowBomb.CheckedChanged += new System.EventHandler(this.checkShowBomb_CheckedChanged);
             // 
-            // button1
-            // 
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.button1.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.button1.Location = new System.Drawing.Point(7, 304);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(125, 32);
-            this.button1.TabIndex = 12;
-            this.button1.TabStop = false;
-            this.button1.Text = "test";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // Game
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -230,7 +215,6 @@ namespace MineSweeper
         private System.Windows.Forms.Panel panelControl;
         private System.Windows.Forms.CheckBox checkShowBomb;
         private System.Windows.Forms.Label PointLabel;
-        private System.Windows.Forms.Button button1;
     }
 }
 
