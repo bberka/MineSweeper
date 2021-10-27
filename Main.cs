@@ -68,13 +68,14 @@ namespace MineSweeper
                 list[number] = true;
             }
             return list;
-        }        void calcNeighbors() //calculates neighbors
+        }        
+        void calcNeighbors() //calculates neighbors
         {
             foreach (Cell c in getAllCells(2))
             {
                 foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, false))
                 {
-                    if (cell.isBomb == true) continue;
+                    if (cell.isBomb) continue;
                     cell.liveNeighbors += 1;
                 }
             }
@@ -89,9 +90,9 @@ namespace MineSweeper
             {
                 switch (get)
                 {
-                    case 1: if (c.isBomb == true) continue; break;
-                    case 2: if (c.isBomb == false) continue; break;
-                    case 3: if (c.isBomb == true && c.isVisited == true) continue; break;
+                    case 1: if (c.isBomb) continue; break;
+                    case 2: if (!(c.isBomb)) continue; break;
+                    case 3: if (c.isBomb && c.isVisited) continue; break;
                 }
                 cellList.Add(c);
             }
@@ -121,7 +122,7 @@ namespace MineSweeper
             foreach (Cell c in gameBoard.Controls) if (c.x_column == x && c.y_row == y) return c;
             return null;
         }
-        int getUnrevealedCellCount()
+        int getUnrevealedCellCount() //gets unrevealed cell count
         {
             int count = 0;
             foreach(Cell c in gameBoard.Controls)
@@ -154,14 +155,14 @@ namespace MineSweeper
                     int bombcount = 0;
                     foreach (Cell cell2 in getNeighborCells(cell.x_column, cell.y_row, false))
                     {
-                        if (cell2.isVisited == true) count++;
-                        if (cell2.isBomb == true) bombcount++;
+                        if (cell2.isVisited) count++;
+                        if (cell2.isBomb) bombcount++;
                     }
                     if (count > 4 - bombcount) cell.BackColor = Color.Yellow;
                 }
             }
 
-            
+            //ends game if there is no cell left to reveal
             if (getUnrevealedCellCount() == 0)
             {
                 MessageBox.Show("There is no cell left to reveal you win!\nPress OK to continue.", "!!!!", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -174,11 +175,23 @@ namespace MineSweeper
             if (c.liveNeighbors != 0) return;
             foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, true))
             {
-                if (cell.isBomb == true || cell.isVisited) continue;
+                if (cell.isBomb || cell.isVisited) continue;
                 revealCell(cell);
                 if (cell.liveNeighbors != 0) continue;
                 cellLogic(cell);
             }
+        }
+        private void cellClick(object sender, EventArgs e) //cell click event
+        {
+            Cell c = (Cell)sender;
+            if (c.isBomb)
+            {
+                showBombs();
+                MessageBox.Show("Game Over!\nPoints:" + Int16.Parse(PointLabel.Text), "!!!!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                clearBoard();
+                return;
+            }
+            cellLogic(c);
         }
         #endregion
 
@@ -220,25 +233,14 @@ namespace MineSweeper
         {
             foreach (Cell c in gameBoard.Controls)
             {
-                if (c.isBomb == true)
+                if (c.isBomb)
                 {
                     if (c.BackColor == Color.Red) c.BackColor = Color.White;
                     else if (c.BackColor == Color.White) c.BackColor = Color.Red;
                 }
             }
         }
-        private void cellClick(object sender, EventArgs e) //cell click event
-        {
-            Cell c = (Cell)sender;
-            if (c.isBomb == true)
-            {
-                showBombs();
-                MessageBox.Show("Game Over!\nPoints:" + Int16.Parse(PointLabel.Text), "!!!!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                clearBoard();
-                return;
-            }
-            cellLogic(c);
-        }
+       
         private void buttonStart_Click(object sender, EventArgs e)
         {
             //default board values
