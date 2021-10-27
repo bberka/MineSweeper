@@ -98,25 +98,23 @@ namespace MineSweeper
             }
             return cellList;
         }
+      
         List<Cell> getNeighborCells(int x, int y, bool get) //false: gets all 8 neighbor cells // true: gets 4 neighbor cells 
         {
             List<Cell> nList = new List<Cell>();
             List<Cell> neighborList = new List<Cell>();
-            if (get == false)
+
+            for (int i = -1; i <= 1; i++)
             {
-                nList.Add(getCellbyCoordinate(x - 1, y - 1));
-                nList.Add(getCellbyCoordinate(x + 1, y - 1));
-                nList.Add(getCellbyCoordinate(x - 1, y + 1));
-                nList.Add(getCellbyCoordinate(x + 1, y + 1));
+                for (int j = -1; j <= 1; j++)
+                {
+                    if (get && !(i == 0 || j == 0)) continue;
+                    nList.Add(getCellbyCoordinate(x + i, y + j));
+                }
             }
-            nList.Add(getCellbyCoordinate(x, y + 1));
-            nList.Add(getCellbyCoordinate(x, y - 1));
-            nList.Add(getCellbyCoordinate(x - 1, y));
-            nList.Add(getCellbyCoordinate(x + 1, y));
-            foreach (Cell c in nList) if (c != null) neighborList.Add(c);
+            foreach (Cell c in nList) if (c != null) neighborList.Add(c); //removes null values from list and creates new list 
             return neighborList;
         }
-
         Cell getCellbyCoordinate(int x, int y) //gets cell by given coordinate returns null if theres no cell
         {
             foreach (Cell c in gameBoard.Controls) if (c.x_column == x && c.y_row == y) return c;
