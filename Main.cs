@@ -11,7 +11,6 @@ namespace MineSweeper
         {
             InitializeComponent();
         }
-        public int cellLeft = 0;
         private void Game_Load(object sender, EventArgs e)
         {
 
@@ -43,7 +42,6 @@ namespace MineSweeper
                     count++;
                 }
             }
-            cellLeft = totalcount - bombcount;
             buttonStart.Enabled = false;
             comboDifficulty.Enabled = false;
             buttonReset.Enabled = true;
