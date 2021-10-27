@@ -11,12 +11,13 @@ namespace MineSweeper
         {
             InitializeComponent();
         }
-
+        public int cellLeft = 0;
         private void Game_Load(object sender, EventArgs e)
         {
 
         }
-        void createBoard(int max_columns, int max_rows, int difficulty) //creates board by giv
+        #region create board
+        void createBoard(int max_columns, int max_rows, int difficulty) //creates board 
         {
             int bombcount = ((max_columns * max_rows) * difficulty) / 100;
             int totalcount = max_columns * max_rows;
@@ -29,42 +30,45 @@ namespace MineSweeper
                     Cell c = new Cell();
                     c.BackColor = Color.White;
                     c.Size = new Size(45, 40);
-                    c.Location = new Point(x * (45), y * (40));
-                    c.FlatAppearance.BorderSize = 1;
-                    c.TextAlign = ContentAlignment.TopCenter;
-                    c.Font = new Font(c.Font.FontFamily, 14);
-                    if (bombList[count] == true) c.isBomb = true;
-                    if (c.isBomb == false) c.liveNeighbors = 0;
+                    c.Location = new Point(x * 45, y * 40);
+                    c.TextAlign = ContentAlignment.MiddleCenter;
+                    c.Font = new Font(c.Font.FontFamily, 18);
                     c.x_column = x;
                     c.y_row = y;
                     c.TabStop = false;
-                    this.gameBoard.Controls.Add(c);
                     c.Click += cellClick;
+                    if (bombList[count] == true) c.isBomb = true;
+                    else c.liveNeighbors = 0;
+                    this.gameBoard.Controls.Add(c);                    
                     count++;
                 }
             }
+            cellLeft = totalcount - bombcount;
             buttonStart.Enabled = false;
             comboDifficulty.Enabled = false;
             buttonReset.Enabled = true;
             calcNeighbors();
+            
         }
-        void clearBoard() //restarts app
+        bool[] createBomblist(int total, int bomb) //creates randomized bomb list
         {
-            Application.Restart();
-        }
-        void showBombs() //show bomb checkbox cheat
-        {
-            foreach (Cell c in gameBoard.Controls)
-            {
-                if (c.isBomb == true)
-                {
-                    if (c.BackColor == Color.Red) c.BackColor = Color.White;
-                    else if (c.BackColor == Color.White) c.BackColor = Color.Red;
-                }
-            }
-        }
+            Random rand = new Random();
+            bool[] list = new bool[total];
+            List<int> bomblist = new List<int>();
+            int number = 0;
 
-        void calcNeighbors() //calculates neighbors
+            for (int i = 0; i < total - bomb; i++) list[i] = false;
+            for (int i = 0; i < bomb; i++)
+            {
+                do
+                {
+                    number = rand.Next(0, total);
+                } while (bomblist.Contains(number));
+                bomblist.Add(number);
+                list[number] = true;
+            }
+            return list;
+        }        void calcNeighbors() //calculates neighbors
         {
             foreach (Cell c in getAllCells(2))
             {
@@ -75,6 +79,9 @@ namespace MineSweeper
                 }
             }
         }
+        #endregion
+
+        #region getcell
         List<Cell> getAllCells(int get) //0: gets all cells // 1: gets non-bombs // 2: gets bombs // 3: gets unrevealed non-bomb cells
         {
             List<Cell> cellList = new List<Cell>();
@@ -108,26 +115,25 @@ namespace MineSweeper
             foreach (Cell c in nList) if (c != null) neighborList.Add(c);
             return neighborList;
         }
+
         Cell getCellbyCoordinate(int x, int y) //gets cell by given coordinate returns null if theres no cell
         {
             foreach (Cell c in gameBoard.Controls) if (c.x_column == x && c.y_row == y) return c;
             return null;
         }
-
-        private void cellClick(object sender, EventArgs e) //cell click event
+        int getUnrevealedCellCount()
         {
-            Cell c = (Cell)sender;
-            if (c.isBomb == true)
+            int count = 0;
+            foreach(Cell c in gameBoard.Controls)
             {
-                showBombs();
-                MessageBox.Show("Game Over!\nPoints:" + Int16.Parse(PointLabel.Text), "!!!!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                clearBoard();
-                return;
+                if (c.isBomb) continue;
+                if (!(c.isVisited)) count++;
             }
-            cellLogic(c);
+            return count;
         }
+        #endregion
 
-
+        #region logic
         void revealCell(Cell c)
         {
             int liveN = c.liveNeighbors;
@@ -140,7 +146,7 @@ namespace MineSweeper
             PointLabel.Text = points.ToString();
 
             //flags a bomb cell if 4~ neighbors revealed
-            foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, false)) 
+            foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, false))
             {
                 if (cell.isBomb == true)
                 {
@@ -154,6 +160,13 @@ namespace MineSweeper
                     if (count > 4 - bombcount) cell.BackColor = Color.Yellow;
                 }
             }
+
+            
+            if (getUnrevealedCellCount() == 0)
+            {
+                MessageBox.Show("There is no cell left to reveal you win!\nPress OK to continue.", "!!!!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                clearBoard();
+            }
         }
         void cellLogic(Cell c) //Recurisive game logic function
         {
@@ -162,32 +175,13 @@ namespace MineSweeper
             foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, true))
             {
                 if (cell.isBomb == true || cell.isVisited) continue;
-                int liveN = cell.liveNeighbors;
                 revealCell(cell);
                 if (cell.liveNeighbors != 0) continue;
                 cellLogic(cell);
             }
         }
+        #endregion
 
-        bool[] createBomblist(int total, int bomb) //creates randomized bomb list
-        {
-            Random rand = new Random();
-            bool[] list = new bool[total];
-            List<int> bomblist = new List<int>();
-            int number = 0;
-
-            for (int i = 0; i < total - bomb; i++) list[i] = false;
-            for (int i = 0; i < bomb; i++)
-            {
-                do
-                {
-                   number = rand.Next(0, total);
-                } while (bomblist.Contains(number));
-                bomblist.Add(number);
-                list[number] = true;
-            }
-            return list;
-        }
         int getDifficulty() //gets selected difficulty // calculated as percentage
         {
             int selected_diff = comboDifficulty.SelectedIndex;
@@ -217,6 +211,33 @@ namespace MineSweeper
                 this.Width = 946;
                 this.Height = 742;
             }
+        }
+        void clearBoard() //restarts app
+        {
+            Application.Restart();
+        }
+        void showBombs() //show bomb checkbox cheat
+        {
+            foreach (Cell c in gameBoard.Controls)
+            {
+                if (c.isBomb == true)
+                {
+                    if (c.BackColor == Color.Red) c.BackColor = Color.White;
+                    else if (c.BackColor == Color.White) c.BackColor = Color.Red;
+                }
+            }
+        }
+        private void cellClick(object sender, EventArgs e) //cell click event
+        {
+            Cell c = (Cell)sender;
+            if (c.isBomb == true)
+            {
+                showBombs();
+                MessageBox.Show("Game Over!\nPoints:" + Int16.Parse(PointLabel.Text), "!!!!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                clearBoard();
+                return;
+            }
+            cellLogic(c);
         }
         private void buttonStart_Click(object sender, EventArgs e)
         {
