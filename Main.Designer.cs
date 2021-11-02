@@ -113,10 +113,9 @@ namespace MineSweeper
             this.comboBoard.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.comboBoard.FormattingEnabled = true;
             this.comboBoard.Items.AddRange(new object[] {
-            "7x7",
             "10x10",
-            "13x13",
-            "17x17"});
+            "15x15",
+            "20x20"});
             this.comboBoard.Location = new System.Drawing.Point(7, 82);
             this.comboBoard.Name = "comboBoard";
             this.comboBoard.Size = new System.Drawing.Size(121, 24);
@@ -157,7 +156,7 @@ namespace MineSweeper
             this.panelControl.Controls.Add(this.buttonReset);
             this.panelControl.Location = new System.Drawing.Point(12, 12);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(138, 358);
+            this.panelControl.Size = new System.Drawing.Size(138, 285);
             this.panelControl.TabIndex = 8;
             // 
             // PointLabel
@@ -192,6 +191,7 @@ namespace MineSweeper
             this.Controls.Add(this.panelControl);
             this.Controls.Add(this.gameBoard);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "Game";
             this.ShowIcon = false;
             this.Text = "Game";

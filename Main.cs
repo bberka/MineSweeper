@@ -30,7 +30,6 @@ namespace MineSweeper
                     c.BackColor = Color.White;
                     c.Size = new Size(45, 40);
                     c.Location = new Point(x * 45, y * 40);
-                    c.TextAlign = ContentAlignment.MiddleCenter;
                     c.Font = new Font(c.Font.FontFamily, 18);
                     c.x_column = x;
                     c.y_row = y;
@@ -38,23 +37,24 @@ namespace MineSweeper
                     c.Click += cellClick;
                     if (bombList[count] == true) c.isBomb = true;
                     else c.liveNeighbors = 0;
-                    this.gameBoard.Controls.Add(c);                    
+                    this.gameBoard.Controls.Add(c);
                     count++;
                 }
             }
             buttonStart.Enabled = false;
-            comboDifficulty.Enabled = false;
             buttonReset.Enabled = true;
+            comboDifficulty.Enabled = false;
+            comboBoard.Enabled = false;         
+            checkShowBomb.Enabled = true;
             calcNeighbors();
-            
+
         }
         bool[] createBomblist(int total, int bomb) //creates randomized bomb list
         {
             Random rand = new Random();
-            bool[] list = new bool[total];
             List<int> bomblist = new List<int>();
+            bool[] list = new bool[total];
             int number = 0;
-
             for (int i = 0; i < total - bomb; i++) list[i] = false;
             for (int i = 0; i < bomb; i++)
             {
@@ -66,11 +66,12 @@ namespace MineSweeper
                 list[number] = true;
             }
             return list;
-        }        
+        }
         void calcNeighbors() //calculates neighbors
         {
-            foreach (Cell c in getAllCells(2))
+            foreach (Cell c in this.gameBoard.Controls)
             {
+                if (!(c.isBomb)) continue;
                 foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, false))
                 {
                     if (cell.isBomb) continue;
@@ -81,36 +82,19 @@ namespace MineSweeper
         #endregion
 
         #region getcell
-        List<Cell> getAllCells(int get) //0: gets all cells // 1: gets non-bombs // 2: gets bombs // 3: gets unrevealed non-bomb cells
-        {
-            List<Cell> cellList = new List<Cell>();
-            foreach (Cell c in gameBoard.Controls)
-            {
-                switch (get)
-                {
-                    case 1: if (c.isBomb) continue; break;
-                    case 2: if (!(c.isBomb)) continue; break;
-                    case 3: if (c.isBomb && c.isVisited) continue; break;
-                }
-                cellList.Add(c);
-            }
-            return cellList;
-        }
-      
-        List<Cell> getNeighborCells(int x, int y, bool get) //false: gets all 8 neighbor cells // true: gets 4 neighbor cells 
-        {
-            List<Cell> nList = new List<Cell>();
-            List<Cell> neighborList = new List<Cell>();
 
+        List<Cell> getNeighborCells(int x, int y, bool get) //false: gets all 8 neighbor cells // true: gets 4 neighbor cells 
+        {           
+            List<Cell> neighborList = new List<Cell>();
             for (int i = -1; i <= 1; i++)
             {
                 for (int j = -1; j <= 1; j++)
                 {
                     if (get && !(i == 0 || j == 0)) continue;
-                    nList.Add(getCellbyCoordinate(x + i, y + j));
+                    Cell c = getCellbyCoordinate(x + i, y + j);
+                    if (c != null) neighborList.Add(c);
                 }
-            }
-            foreach (Cell c in nList) if (c != null) neighborList.Add(c); //removes null values from list and creates new list 
+            }            
             return neighborList;
         }
         Cell getCellbyCoordinate(int x, int y) //gets cell by given coordinate returns null if theres no cell
@@ -121,7 +105,7 @@ namespace MineSweeper
         int getUnrevealedCellCount() //gets unrevealed cell count
         {
             int count = 0;
-            foreach(Cell c in gameBoard.Controls)
+            foreach (Cell c in gameBoard.Controls)
             {
                 if (c.isBomb) continue;
                 if (!(c.isVisited)) count++;
@@ -130,19 +114,9 @@ namespace MineSweeper
         }
         #endregion
 
-        #region logic
-        void revealCell(Cell c)
+        #region logic,
+        void flagCell(Cell c) //flags a bomb cell if 4~ neighbors revealed
         {
-            int liveN = c.liveNeighbors;
-            c.Enabled = false;
-            c.isVisited = true;
-            c.BackColor = Color.Gray;
-            if (liveN != 0 && c.isBomb == false) c.Text = liveN.ToString();
-            int points = Int16.Parse(PointLabel.Text);
-            points++;
-            PointLabel.Text = points.ToString();
-
-            //flags a bomb cell if 4~ neighbors revealed
             foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, false))
             {
                 if (cell.isBomb == true)
@@ -154,14 +128,30 @@ namespace MineSweeper
                         if (cell2.isVisited) count++;
                         if (cell2.isBomb) bombcount++;
                     }
-                    if (count > 4 - bombcount) cell.BackColor = Color.Yellow;
+                    if (count > 4 - bombcount)
+                    {
+                        cell.BackColor = Color.Yellow;
+                        cell.Enabled = false;
+                    }
                 }
             }
-
+        }
+        void revealCell(Cell c)
+        {
+            int liveN = c.liveNeighbors;
+            c.Enabled = false;
+            c.isVisited = true;
+            c.BackColor = Color.Gray;
+            if (liveN != 0 && c.isBomb == false) c.Text = liveN.ToString();
+            int points = Int16.Parse(PointLabel.Text);
+            points++;
+            PointLabel.Text = points.ToString();
+            
+            flagCell(c);
             //ends game if there is no cell left to reveal
             if (getUnrevealedCellCount() == 0)
             {
-                MessageBox.Show("There is no cell left to reveal you win!\nPress OK to continue.", "!!!!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("There is no cell left to reveal you win!\nPress OK to restart.", "!!!!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 clearBoard();
             }
         }
@@ -172,18 +162,17 @@ namespace MineSweeper
             foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, true))
             {
                 if (cell.isBomb || cell.isVisited) continue;
-                revealCell(cell);
-                if (cell.liveNeighbors != 0) continue;
                 cellLogic(cell);
             }
         }
+
         private void cellClick(object sender, EventArgs e) //cell click event
         {
             Cell c = (Cell)sender;
             if (c.isBomb)
             {
                 showBombs();
-                MessageBox.Show("Game Over!\nPoints:" + Int16.Parse(PointLabel.Text), "!!!!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Game Over!\nPoints: " + Int16.Parse(PointLabel.Text), "!!!!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 clearBoard();
                 return;
             }
@@ -194,31 +183,26 @@ namespace MineSweeper
         int getDifficulty() //gets selected difficulty // calculated as percentage
         {
             int selected_diff = comboDifficulty.SelectedIndex;
-            if (selected_diff == 1) return 20;
-            if (selected_diff == 2) return 30;
+            if (selected_diff == 1) return 17;
+            if (selected_diff == 2) return 25;
             return 10; //easy - default value
         }
         void changeWindowSize() //changes window size by checking game board
         {
             if (comboBoard.SelectedIndex == 0)
             {
-                this.Width = 494;
-                this.Height = 340;
+                this.Width = 633;
+                this.Height = 461;
             }
             else if (comboBoard.SelectedIndex == 1)
             {
-                this.Width = 630;
-                this.Height = 463;
+                this.Width = 855;
+                this.Height = 662;
             }
             else if (comboBoard.SelectedIndex == 2)
             {
-                this.Width = 763;
-                this.Height = 580;
-            }
-            else if (comboBoard.SelectedIndex == 3)
-            {
-                this.Width = 946;
-                this.Height = 742;
+                this.Width = 1082;
+                this.Height = 862;
             }
         }
         void clearBoard() //restarts app
@@ -236,7 +220,7 @@ namespace MineSweeper
                 }
             }
         }
-       
+
         private void buttonStart_Click(object sender, EventArgs e)
         {
             //default board values
@@ -249,9 +233,7 @@ namespace MineSweeper
             }
             createBoard(max_columns_x, max_rows_y, getDifficulty());
             changeWindowSize();
-            comboDifficulty.Enabled = false;
-            comboBoard.Enabled = false;
-            checkShowBomb.Enabled = true;
+
         }
 
         private void comboDifficulty_SelectedIndexChanged(object sender, EventArgs e)
@@ -276,5 +258,8 @@ namespace MineSweeper
         private void button1_Click(object sender, EventArgs e)
         {
         }
+
+
+
     }
 }
