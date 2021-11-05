@@ -60,7 +60,7 @@ namespace MineSweeper
             {
                 do
                 {
-                    number = rand.Next(0, total);
+                  number = rand.Next(0, total);
                 } while (bomblist.Contains(number));
                 bomblist.Add(number);
                 list[number] = true;
@@ -114,8 +114,8 @@ namespace MineSweeper
         }
         #endregion
 
-        #region logic,
-        void flagCell(Cell c) //flags a bomb cell if 4~ neighbors revealed
+        #region logic
+        void flagCell(Cell c) //flags and disables a bomb cell if 4~ neighbors revealed
         {
             foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, false))
             {
