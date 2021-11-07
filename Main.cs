@@ -16,6 +16,25 @@ namespace MineSweeper
 
         }
         #region create board
+
+        void startGame() 
+        {
+            //default board values
+            int max_columns_x = 15;
+            int max_rows_y = 15;
+            if (comboBoard.SelectedItem != null) //gets selected board values
+            {
+                max_columns_x = Int16.Parse(comboBoard.SelectedItem.ToString().Split('x')[0]);
+                max_rows_y = Int16.Parse(comboBoard.SelectedItem.ToString().Split('x')[1]);
+            }
+            createBoard(max_columns_x, max_rows_y, getDifficulty());
+            changeWindowSize();
+            buttonStart.Enabled = false;
+            buttonReset.Enabled = true;
+            comboDifficulty.Enabled = false;
+            comboBoard.Enabled = false;
+            checkShowBomb.Enabled = true;            
+        }
         void createBoard(int max_columns, int max_rows, int difficulty) //creates board 
         {
             int bombcount = ((max_columns * max_rows) * difficulty) / 100;
@@ -26,14 +45,16 @@ namespace MineSweeper
             {
                 for (int x = 0; x < max_columns; x++)
                 {
-                    Cell c = new Cell();
-                    c.BackColor = Color.White;
-                    c.Size = new Size(45, 40);
-                    c.Location = new Point(x * 45, y * 40);
-                    c.Font = new Font(c.Font.FontFamily, 18);
-                    c.x_column = x;
-                    c.y_row = y;
-                    c.TabStop = false;
+                    Cell c = new Cell
+                    {
+                        BackColor = Color.White,
+                        Size = new Size(45, 40),
+                        Location = new Point(x * 45, y * 40),
+                        Font = new Font(Font.FontFamily, 18),
+                        x_column = x,
+                        y_row = y,
+                        TabStop = false                         
+                    };
                     c.Click += cellClick;
                     if (bombList[count] == true) c.isBomb = true;
                     else c.liveNeighbors = 0;
@@ -41,25 +62,18 @@ namespace MineSweeper
                     count++;
                 }
             }
-            buttonStart.Enabled = false;
-            buttonReset.Enabled = true;
-            comboDifficulty.Enabled = false;
-            comboBoard.Enabled = false;         
-            checkShowBomb.Enabled = true;
             calcNeighbors();
-
         }
         bool[] createBomblist(int total, int bomb) //creates randomized bomb list
         {
             Random rand = new Random();
             List<int> bomblist = new List<int>();
-            bool[] list = new bool[total];
-            int number = 0;
+            bool[] list = new bool[total];            
             for (int i = 0; i < total - bomb; i++) list[i] = false;
             for (int i = 0; i < bomb; i++)
             {
-                do
-                {
+                int number = 0;
+                do {
                   number = rand.Next(0, total);
                 } while (bomblist.Contains(number));
                 bomblist.Add(number);
@@ -159,7 +173,7 @@ namespace MineSweeper
         {
             revealCell(c);
             if (c.liveNeighbors != 0) return;
-            foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, true))
+            foreach (Cell cell in getNeighborCells(c.x_column, c.y_row, false))
             {
                 if (cell.isBomb || cell.isVisited) continue;
                 cellLogic(cell);
@@ -223,16 +237,7 @@ namespace MineSweeper
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            //default board values
-            int max_columns_x = 15;
-            int max_rows_y = 15;
-            if (comboBoard.SelectedItem != null) //gets selected board values
-            {
-                max_columns_x = Int16.Parse(comboBoard.SelectedItem.ToString().Split('x')[0]);
-                max_rows_y = Int16.Parse(comboBoard.SelectedItem.ToString().Split('x')[1]);
-            }
-            createBoard(max_columns_x, max_rows_y, getDifficulty());
-            changeWindowSize();
+            startGame();
 
         }
 
